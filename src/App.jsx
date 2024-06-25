@@ -1,12 +1,37 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import './App.css'
+import { useDispatch } from 'react-redux'
+import auth from './appwrite/auth'
+import { login, logout } from './store/AuthSlice'
+import { Footer, Header } from './components'
 
 function App() {
+  const dispatch = useDispatch()
+  const [loading, setLoadng] = useState(true)
 
-  return (
-    <>
-      <h1 className="text-black p-4 rounded-2xl bg-green-700">Hello World</h1>
-    </>
+  useEffect(() => {
+    auth.getCurrentUser().then((userData) => {
+      if(userData){
+        dispatch(login({userData}))
+      }
+      else{
+        dispatch(logout())
+      }
+    })
+    .finally(() => setLoadng(false))
+  }, [])
+  
+
+  return loading ? null : (
+    <div className="flex flex-wrap content-between bg-gray-400">
+      <div className="w-full block">
+        <Header/>
+        <main>
+          {/* <Outlet/> */}
+        </main>
+        <Footer/>
+      </div>
+    </div>
   )
 }
 
