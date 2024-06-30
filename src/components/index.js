@@ -9,7 +9,7 @@ import Login from "./Login";
 import PostCard from "./PostCard";
 import Select from "./Select";
 import Signup from "./Signup";
-import AuthLayout from "./AuthLayout"
+import AuthLayout from "./AuthLayout";
 import PostForm from "./PostForm";
 import RTE from "./RTE";
 
@@ -17,8 +17,8 @@ export{
     Header,
     Footer,
     Container,
-    Logo,
     LogoutBtn,
+    Logo,
     Button,
     Input,
     Login,
