@@ -1,16 +1,17 @@
-import React, { useEffect, useState } from 'react'
-import { useSelector } from 'react-redux'
-import parse from "html-react-parser"
-import service from '../appwrite/config'
-import { Button, Container } from '../components/index'
-import { useNavigate, useParams, Link } from 'react-router-dom'
+import React, { useEffect, useState } from "react";
+import { Link, useNavigate, useParams } from "react-router-dom";
+import appwriteService from "../appwrite/config";
+import { Button, Container } from "../components";
+import parse from "html-react-parser";
+import { useSelector } from "react-redux";
 
-function Post() {
+export default function Post() {
     const [post, setPost] = useState(null);
-    const { slug } = useParams()
-    const navigate = useNavigate()
+    const { slug } = useParams();
+    const navigate = useNavigate();
 
     const userData = useSelector((state) => state.auth.userData);
+
     const isAuthor = post && userData ? post.userId === userData.$id : false;
 
     useEffect(() => {
@@ -20,13 +21,13 @@ function Post() {
                 else navigate("/");
             });
         } else navigate("/");
-    }, [slug, navigate])
+    }, [slug, navigate]);
 
     const deletePost = () => {
-        service.deletePost(post.$id).then((status) => {
+        appwriteService.deletePost(post.$id).then((status) => {
             if (status) {
-                service.fileDelete(post.featuredImage);
-                navigate('/');
+                appwriteService.deleteFile(post.featuredImage);
+                navigate("/");
             }
         });
     };
@@ -35,17 +36,22 @@ function Post() {
         <div className="py-8">
             <Container>
                 <div className="w-full flex justify-center mb-4 relative border rounded-xl p-2">
-                    <img src={service.filePreview(post.featuredImage)} alt={post.title} className='rounded=xl' />
+                    <img
+                        src={appwriteService.getFilePreview(post.featuredImage)}
+                        alt={post.title}
+                        className="rounded-xl"
+                    />
+
                     {isAuthor && (
-                        <div className='absolute right-6 top-6'>
+                        <div className="absolute right-6 top-6">
                             <Link to={`/edit-post/${post.$id}`}>
-                                <Button bgColor='bg-green-500' className='mr-3'>
+                                <Button bgColor="bg-green-500" className="mr-3">
                                     Edit
                                 </Button>
-                                <Button bgColor="bg-red-500" onClick={deletePost}>
-                                    Delete
-                                </Button>
                             </Link>
+                            <Button bgColor="bg-red-500" onClick={deletePost}>
+                                Delete
+                            </Button>
                         </div>
                     )}
                 </div>
@@ -54,10 +60,8 @@ function Post() {
                 </div>
                 <div className="browser-css">
                     {parse(post.content)}
-                </div>
+                    </div>
             </Container>
         </div>
     ) : null;
 }
-
-export default Post
