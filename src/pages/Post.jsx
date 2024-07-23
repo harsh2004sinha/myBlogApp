@@ -24,12 +24,14 @@ export default function Post() {
     }, [slug, navigate]);
 
     const deletePost = () => {
+
         appwriteService.deletePost(post.$id).then((status) => {
             if (status) {
-                appwriteService.deleteFile(post.featuredImage);
+                if (post.featuredImage != null) { appwriteService.deleteFile(post.featuredImage); }
                 navigate("/");
             }
         });
+
     };
 
     return post ? (
@@ -60,7 +62,7 @@ export default function Post() {
                 </div>
                 <div className="browser-css">
                     {parse(post.content)}
-                    </div>
+                </div>
             </Container>
         </div>
     ) : null;

@@ -19,33 +19,33 @@ export default function PostForm({ post }) {
     const userData = useSelector((state) => state.auth.userData);
 
     const submit = async (data) => {
-        if (post) {
-            const file = data.image[0] ? await appwriteService.uploadFile(data.image[0]) : null;
-
-            if (file) {
-                appwriteService.deleteFile(post.featuredImage);
+        try {
+            let file;
+            if (data.image && data.image[0]) {
+                file = await appwriteService.uploadFile(data.image[0]);
             }
 
-            const dbPost = await appwriteService.updatePost(post.$id, {
-                ...data,
-                featuredImage: file ? file.$id : undefined,
-            });
+            if (post) {
+                const updatedPost = await appwriteService.updatePost(post.$id, {
+                    ...data,
+                    featuredImage: file ? file.$id : post.featuredImage,
+                });
 
-            if (dbPost) {
-                navigate(`/post/${dbPost.$id}`);
-            }
-        } else {
-            const file = await appwriteService.uploadFile(data.image[0]);
+                if (updatedPost) {
+                    navigate(`/post/${updatedPost.$id}`);
+                }
+            } else {
+                if (file) {
+                    data.featuredImage = file.$id;
+                }
+                const newPost = await appwriteService.createPost({ ...data, userId: userData.$id });
 
-            if (file) {
-                const fileId = file.$id;
-                data.featuredImage = fileId;
-                const dbPost = await appwriteService.createPost({ ...data, userId: userData.$id });
-
-                if (dbPost) {
-                    navigate(`/post/${dbPost.$id}`);
+                if (newPost) {
+                    navigate(`/post/${newPost.$id}`);
                 }
             }
+        } catch (error) {
+            console.error("Error submitting the form:", error);
         }
     };
 
@@ -96,9 +96,9 @@ export default function PostForm({ post }) {
                     type="file"
                     className="mb-4"
                     accept="image/png, image/jpg, image/jpeg, image/gif"
-                    {...register("image", { required: !post })}
+                    {...register("image")}
                 />
-                {post && (
+                {post && post.featuredImage && (
                     <div className="w-full mb-4">
                         <img
                             src={appwriteService.getFilePreview(post.featuredImage)}
@@ -113,9 +113,11 @@ export default function PostForm({ post }) {
                     className="mb-4"
                     {...register("status", { required: true })}
                 />
-                <Button type="submit" bgColor={post ? "bg-green-500" : undefined} className="w-full">
+
+                <Button type="submit" bgColor={post ? "bg-green-500" : undefined} className="w-full" onSubmit={submit}>
                     {post ? "Update" : "Submit"}
                 </Button>
+           
             </div>
         </form>
     );
