@@ -7,6 +7,7 @@ import { Query } from 'appwrite';
 
 function Home() {
     const [posts, setPosts] = useState([]);
+    const [inposts, setInposts] = useState([]);
     const [isLoggedIn, setIsLoggedIn] = useState(false);
     const [loading, setLoading] = useState(true);
     const navigate = useNavigate();
@@ -24,6 +25,12 @@ function Home() {
                         Query.equal("status", "active")
                     ]);
                     setPosts(postsData.documents);
+
+                    const inpostsData = await Service.getPosts([
+                        Query.equal("userId", userData.$id),
+                        Query.equal("status", "inactive")
+                    ])
+                    setInposts(inpostsData.documents);
                 }
 
             } catch (error) {
@@ -57,7 +64,7 @@ function Home() {
         );
     }
 
-    if (posts.length === 0) {
+    if (posts.length === 0 && inposts.length==0) {
         return (
             <div className="w-full h-full mb-20 py-8 mt-20 text-center">
                 <Container>
@@ -77,15 +84,34 @@ function Home() {
     return (
         <div className='w-full py-8'
         >
-            <Container>
-                <div className='flex flex-wrap'>
-                    {posts.map((post) => (
-                        <div key={post.$id} className='p-2 w-1/4'>
-                            <PostCard {...post} />
-                        </div>
-                    ))}
-                </div>
-            </Container>
+            {posts.length === 0 ? (null) : (
+                <Container>
+                    <h1 className='font-sans text-5xl mb-5 ml-3 text-purple-600 bg-slate-900 w-max p-4 rounded-3xl'>
+                        My Active Blogs
+                    </h1>
+                    <div className='flex flex-wrap mb-5'>
+                        {posts.map((post) => (
+                            <div key={post.$id} className='p-2 w-1/4'>
+                                <PostCard {...post} />
+                            </div>
+                        ))}
+                    </div>
+                </Container>
+            )}
+            {inposts.length === 0 ? (null) : (
+                <Container>
+                    <h1 className='font-sans text-5xl mb-5 ml-3 text-purple-600 bg-slate-900 w-max p-4 rounded-3xl'>
+                        My Inactive Blogs
+                    </h1>
+                    <div className='flex flex-wrap'>
+                        {inposts.map((post) => (
+                            <div key={post.$id} className='p-2 w-1/4'>
+                                <PostCard {...post} />
+                            </div>
+                        ))}
+                    </div>
+                </Container>
+            )}
         </div>
     );
 }
