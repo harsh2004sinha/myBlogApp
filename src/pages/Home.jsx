@@ -2,11 +2,13 @@ import React, { useEffect, useState } from 'react';
 import Service from "../appwrite/config";
 import authService from "../appwrite/auth";
 import { Container, PostCard } from '../components';
+import { useNavigate } from 'react-router-dom';
 
 function Home() {
     const [posts, setPosts] = useState([]);
     const [isLoggedIn, setIsLoggedIn] = useState(false);
     const [loading, setLoading] = useState(true);
+    const navigate = useNavigate();
 
     useEffect(() => {
         const fetchData = async () => {
@@ -18,23 +20,7 @@ function Home() {
                 ]);
 
                 setIsLoggedIn(!!userData);
-
-                if (postsData && postsData.documents.length === 0 && userData) {
-                    await Service.createPost({
-                        title: 'Sample Post',
-                        slug: 'sample-post',
-                        content: 'This is a sample post created upon login.',
-                        featuredImage: '',
-                        status: 'active',
-                        userId: userData.$id,
-                    });
-
-                    // Fetch posts again after creating the sample post
-                    const updatedPosts = await Service.getPosts();
-                    setPosts(updatedPosts.documents);
-                } else {
-                    setPosts(postsData.documents);
-                }
+                setPosts(postsData.documents);
             } catch (error) {
                 console.error('Error fetching posts:', error);
             } finally {
@@ -70,10 +56,11 @@ function Home() {
             <div className="w-full h-full mb-20 py-8 mt-20 text-center">
                 <Container>
                     <div className="flex flex-wrap">
-                        <div className="p-2 w-30 ml-96">
-                            <h1 className="text-2xl ml-60 font-bold hover:text-gray-300 cursor-pointer">
-                                No posts available.
-                            </h1>
+                        <div className="p-2 w-full">
+                            <button onClick={() => navigate('/add-post')} 
+                            className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600">
+                                Create Blog
+                            </button>
                         </div>
                     </div>
                 </Container>
@@ -82,7 +69,8 @@ function Home() {
     }
 
     return (
-        <div className='w-full py-8'>
+        <div className='w-full py-8'
+        >
             <Container>
                 <div className='flex flex-wrap'>
                     {posts.map((post) => (
