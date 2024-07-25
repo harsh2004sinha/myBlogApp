@@ -3,6 +3,7 @@ import Service from "../appwrite/config";
 import authService from "../appwrite/auth";
 import { Container, PostCard } from '../components';
 import { useNavigate } from 'react-router-dom';
+import { Query } from 'appwrite';
 
 function Home() {
     const [posts, setPosts] = useState([]);
@@ -14,13 +15,17 @@ function Home() {
         const fetchData = async () => {
             try {
                 // Fetch user data and posts in parallel
-                const [userData, postsData] = await Promise.all([
-                    authService.getCurrentUser(),
-                    Service.getPosts()
-                ]);
-
+                const userData = await authService.getCurrentUser();
                 setIsLoggedIn(!!userData);
-                setPosts(postsData.documents);
+
+                if (userData) {
+                    const postsData = await Service.getPosts([
+                        Query.equal("userId", userData.$id),
+                        Query.equal("status", "active")
+                    ]);
+                    setPosts(postsData.documents);
+                }
+
             } catch (error) {
                 console.error('Error fetching posts:', error);
             } finally {
@@ -41,7 +46,8 @@ function Home() {
                 <Container>
                     <div className="flex flex-wrap">
                         <div className="p-2 w-full">
-                            <h1 className="text-2xl font-bold hover:text-gray-300 cursor-pointer">
+                            <h1 className="text-2xl font-bold hover:text-gray-400 cursor-pointer"
+                                onClick={() => navigate("/login")}>
                                 Login to read posts
                             </h1>
                         </div>
@@ -57,8 +63,8 @@ function Home() {
                 <Container>
                     <div className="flex flex-wrap">
                         <div className="p-2 w-full">
-                            <button onClick={() => navigate('/add-post')} 
-                            className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600">
+                            <button onClick={() => navigate('/add-post')}
+                                className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600">
                                 Create Blog
                             </button>
                         </div>

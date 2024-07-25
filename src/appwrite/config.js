@@ -35,7 +35,10 @@ export class Service{
 
     async updatePost(slug, {title, content, featuredImage, status}){
         try {
-            return await this.databases.updateDocument(
+            const existingblog = await this.getPost(slug);
+            const oldImage = existingblog.featuredImage;
+
+            const updatedBlog = await this.databases.updateDocument(
                 conf.appwriteDatabaseId,
                 conf.appwriteCollectionId,
                 slug,
@@ -44,9 +47,15 @@ export class Service{
                     content,
                     featuredImage,
                     status,
-
                 }
-            )
+            );
+
+            if(oldImage != featuredImage){
+                await this.deleteFile(oldImage);
+            }
+
+            return updatedBlog;
+
         } catch (error) {
             console.log("Appwrite serive :: updatePost :: error", error);
         }
@@ -58,7 +67,6 @@ export class Service{
                 conf.appwriteDatabaseId,
                 conf.appwriteCollectionId,
                 slug
-            
             )
             return true
         } catch (error) {
@@ -81,18 +89,19 @@ export class Service{
         }
     }
 
-    async getPosts(queries = []) {
+    async getPosts(queries = []){
         try {
             return await this.databases.listDocuments(
                 conf.appwriteDatabaseId,
                 conf.appwriteCollectionId,
-                queries,
-            );
+                queries,                
+            )
         } catch (error) {
-            console.log("Appwrite service :: getPosts :: error", error);
-            return false;
+            console.log("Appwrite serive :: getPosts :: error", error);
+            return false
         }
     }
+
     
 
     // file upload service
@@ -135,3 +144,5 @@ export class Service{
 
 const service = new Service()
 export default service
+
+
